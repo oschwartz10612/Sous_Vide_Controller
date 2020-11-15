@@ -144,6 +144,9 @@ void Run()
         if (millis() - lastLogTime > logInterval)
         {
             lastLogTime = millis();
+            Serial.print(Setpoint);
+            Serial.print(",");
+            Serial.println(Output);
             Serial.print(Input);
             Serial.print(",");
             Serial.println(Output);
