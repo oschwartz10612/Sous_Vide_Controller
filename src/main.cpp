@@ -134,10 +134,6 @@ void Run()
 
             myPID.Compute();
 
-            Serial.print(Input);
-            Serial.print(",");
-            Serial.println(Output);
-
             onTime = Output;
         }
 
@@ -146,7 +142,6 @@ void Run()
             lastLogTime = millis();
             Serial.print(Setpoint);
             Serial.print(",");
-            Serial.println(Output);
             Serial.print(Input);
             Serial.print(",");
             Serial.println(Output);
