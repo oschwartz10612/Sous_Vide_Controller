@@ -6,23 +6,27 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UDPClient : MonoBehaviour
 {
     Thread udpListeningThread;
-    public int portNumberReceive;
+
     UdpClient receivingUdpClient;
-    UdpClient sendingUdpClient;
+    public string clientAddress;
+
+    public int portNumberReceive;
+    public string UDPData = null;
+
+    public Text tempatureDisplay;
 
     private void initListenerThread()
     {
-        portNumberReceive = 5000;
-
         Debug.Log("Started on : " + portNumberReceive.ToString());
         udpListeningThread = new Thread(new ThreadStart(UdpListener));
         receivingUdpClient = new UdpClient(portNumberReceive);
 
-        receivingUdpClient.Connect("192.168.1.233", 4210);
+        receivingUdpClient.Connect(clientAddress, 4210);
 
         // Run in background
         udpListeningThread.IsBackground = true;
@@ -47,12 +51,10 @@ public class UDPClient : MonoBehaviour
                     string returnData = Encoding.ASCII.GetString(receiveBytes);
                     Debug.Log("Message Received " + returnData.ToString());
                     Debug.Log("Address IP Sender " + RemoteIpEndPoint.Address.ToString());
-                    Debug.Log("Port Number Sender " + RemoteIpEndPoint.Port.ToString()); 
+                    Debug.Log("Port Number Sender " + RemoteIpEndPoint.Port.ToString());
 
-                    if (returnData.ToString() == "TextTest")
-                    {
-                        //Do something if TextTest is received
-                    }
+                    UDPData = returnData.ToString();
+
                 }
             }
             catch (Exception e)
@@ -62,7 +64,15 @@ public class UDPClient : MonoBehaviour
         }
     }
 
-    void OnDisable()
+    void Update()
+    {
+        if (UDPData != null)
+        {
+            tempatureDisplay.text = UDPData;
+        }
+    }
+
+    void destroyUDP()
     {
         if (udpListeningThread != null && udpListeningThread.IsAlive)
         {
@@ -72,18 +82,32 @@ public class UDPClient : MonoBehaviour
         receivingUdpClient.Close();
     }
 
-    public void sendTest()
+    void sendClientHandshake()
     {
+        sendData("client_handshake");
+    }
 
+    public void restartConnection()
+    {
+        destroyUDP();
+        initListenerThread();
+        sendClientHandshake();
+    }
 
-        // Sends a message to the host to which you have connected.
-        Byte[] sendBytes = Encoding.ASCII.GetBytes("Is anybody there?");
-
+    public void sendData(string data)
+    {
+        Byte[] sendBytes = Encoding.ASCII.GetBytes(data);
         receivingUdpClient.Send(sendBytes, sendBytes.Length);
     }
 
     void Start()
     {
         initListenerThread();
+        sendClientHandshake();
+    }
+
+    void OnDisable()
+    {
+        destroyUDP();
     }
 }
