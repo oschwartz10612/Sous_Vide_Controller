@@ -1,0 +1,26 @@
+fileFormatVersion: 2
+guid: 1965deddf662c4babb3871aa6e1d55cb
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Protomolecule
+  fontNames:
+  - Protomolecule
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 46b559d14c8c6427299454a760534a3f, type: 3}
+  - {fileID: 12800000, guid: 3446259350b0a438f8c2dc2c0bd47711, type: 3}
+  - {fileID: 12800000, guid: a16f50ccb00ef4cecb7dda0a063696c7, type: 3}
+  - {fileID: 12800000, guid: 6288e01e7c71348fbadf6d138a2b9a43, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

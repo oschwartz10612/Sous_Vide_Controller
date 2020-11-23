@@ -233,7 +233,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 270.7, y: -51.7}
+  m_AnchoredPosition: {x: 120, y: -47}
   m_SizeDelta: {x: 574.3233, y: 108.26108}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &300473883
@@ -256,7 +256,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: 1965deddf662c4babb3871aa6e1d55cb, type: 3}
     m_FontSize: 50
     m_FontStyle: 0
     m_BestFit: 0
@@ -619,8 +619,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb933b853d0644d5696b44de3b0a9770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  portNumberReceive: 4210
   clientAddress: 192.168.1.233
+  portNumberReceive: 4210
+  UDPData: 
   tempatureDisplay: {fileID: 300473883}
 --- !u!4 &1125428630
 Transform:
