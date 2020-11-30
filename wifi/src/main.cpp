@@ -86,9 +86,15 @@ void loop()
     Serial.printf("UDP packet contents: %s\n", incomingPacket);
 #endif
 
-    if (strcmp(incomingPacket, "client_handshake") != 0)
+    if (strcmp(incomingPacket, "client_handshake") == 0)
     {
-          Serial.println(incomingPacket);
+      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      Udp.write("server_handshake");
+      Udp.endPacket();
+    }
+    else
+    {
+      Serial.println(incomingPacket);
     }
   }
 
@@ -106,4 +112,3 @@ void loop()
     newData = false;
   }
 }
-
