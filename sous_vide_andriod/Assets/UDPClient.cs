@@ -7,26 +7,42 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using XCharts;
 
 public class UDPClient : MonoBehaviour
 {
     Thread udpListeningThread;
-
     UdpClient receivingUdpClient;
-    public string clientAddress;
 
-    public int portNumberReceive;
+    public string defaultClientAddress;
+    public int receivingPortNumber;
+    public int clientPortNumber;
     public string UDPData = null;
-
     public Text tempatureDisplay;
+    public LineChart chart;
+    public InputField inputTemp;
+    public InputField inputClientIP;
+
+    private Boolean isNewData = false;
+    private Boolean isValidConnection = false;
+    private Boolean isTimerActive = false;
+    private float timeRemaining = 10;
 
     private void initListenerThread()
     {
-        Debug.Log("Started on : " + portNumberReceive.ToString());
-        udpListeningThread = new Thread(new ThreadStart(UdpListener));
-        receivingUdpClient = new UdpClient(portNumberReceive);
+        string address = defaultClientAddress;
+        ConnectionData data = SaveSystem.LoadData();
+        if (data != null)
+        {
+            address = data.ip;
+        }
+        inputClientIP.text = address;
 
-        receivingUdpClient.Connect(clientAddress, 4210);
+        Debug.Log("Started on : " + receivingPortNumber.ToString());
+        udpListeningThread = new Thread(new ThreadStart(UdpListener));
+        receivingUdpClient = new UdpClient(receivingPortNumber);
+
+        receivingUdpClient.Connect(address, clientPortNumber);
 
         // Run in background
         udpListeningThread.IsBackground = true;
@@ -53,8 +69,15 @@ public class UDPClient : MonoBehaviour
                     Debug.Log("Address IP Sender " + RemoteIpEndPoint.Address.ToString());
                     Debug.Log("Port Number Sender " + RemoteIpEndPoint.Port.ToString());
 
-                    UDPData = returnData.ToString();
-
+                    if (returnData.ToString() == "server_handshake")
+                    {
+                        isValidConnection = true;
+                    }
+                    else
+                    {
+                        UDPData = returnData.ToString();
+                        isNewData = true;
+                    }
                 }
             }
             catch (Exception e)
@@ -64,11 +87,28 @@ public class UDPClient : MonoBehaviour
         }
     }
 
+    int i = 0;
     void Update()
     {
-        if (UDPData != null)
+        if (isNewData)
         {
-            tempatureDisplay.text = UDPData;
+            isNewData = false;
+            chart.AddXAxisData("x" + i);
+            chart.AddData(0, float.Parse(UDPData));
+            i++;
+            if (UDPData != null)
+            {
+                tempatureDisplay.text = UDPData;
+            }
+        }
+
+        if (isTimerActive)
+        {
+            doTimer();
+        }
+        if (isValidConnection)
+        {
+            showSuccess("Connection established successfully.");
         }
     }
 
@@ -85,19 +125,63 @@ public class UDPClient : MonoBehaviour
     void sendClientHandshake()
     {
         sendData("client_handshake");
+        timeRemaining = 10;
+        isValidConnection = false;
+        isTimerActive = true;
+    }
+
+    void doTimer()
+    {
+        if (timeRemaining > 0)
+        {
+            timeRemaining -= Time.deltaTime;
+        }
+        else
+        {
+            if (!isValidConnection)
+            {
+                showError("Failed to establish connection with device. Is the device powered on?");
+            }
+            isTimerActive = false;
+        }
     }
 
     public void restartConnection()
     {
         destroyUDP();
+
+        string address = inputClientIP.text;
+        SaveSystem.SaveData(address);
+
         initListenerThread();
         sendClientHandshake();
+    }
+
+    public void sendStart()
+    {
+        if (inputTemp.text == "" || inputTemp.text == null)
+        {
+            showError("Input tempature to start");
+        } else
+        {
+            sendData(inputTemp.text);
+        }
     }
 
     public void sendData(string data)
     {
         Byte[] sendBytes = Encoding.ASCII.GetBytes(data);
         receivingUdpClient.Send(sendBytes, sendBytes.Length);
+    }
+
+    private void showError(string error)
+    {
+        Debug.LogError(error);
+    }
+
+    private void showSuccess(string error)
+    {
+        Debug.Log(error);
     }
 
     void Start()
