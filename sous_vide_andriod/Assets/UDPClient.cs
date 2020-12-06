@@ -18,15 +18,89 @@ public class UDPClient : MonoBehaviour
     public int receivingPortNumber;
     public int clientPortNumber;
     public string UDPData = null;
-    public Text tempatureDisplay;
+
+    public Text temperatureDisplay;
+    public Text setpointDisplay;
+    public Text outputDisplay;
+    public Text stateDisplay;
+
     public LineChart chart;
     public InputField inputTemp;
     public InputField inputClientIP;
 
     private Boolean isNewData = false;
     private Boolean isValidConnection = false;
+    private Boolean connectionFlag = false;
+
     private Boolean isTimerActive = false;
     private float timeRemaining = 10;
+
+    private class DeviceData
+    {
+        public string state;
+        public float setpoint;
+        public float temperature;
+        public float output;
+    }
+
+    int i = 0;
+    void Update()
+    {
+        if (isNewData)
+        {
+            isNewData = false;
+            string trimmedUdpData = UDPData.Replace("?", "");
+
+
+            //Parse data
+            if (UDPData.Contains("l:"))
+            {
+                string[] data;
+                string v = trimmedUdpData.Replace("l:", "");
+                data = v.Split(',');
+                DeviceData deviceData = new DeviceData
+                {
+                    setpoint = float.Parse(data[0]),
+                    temperature = float.Parse(data[1]),
+                    output = float.Parse(data[2]),
+                    state = data[3]
+                };
+                chart.AddXAxisData("x" + i);
+                chart.AddData(0, deviceData.temperature);
+                i++;
+
+                setpointDisplay.text = deviceData.setpoint.ToString();
+                outputDisplay.text = deviceData.output.ToString();
+                stateDisplay.text = deviceData.state;
+                temperatureDisplay.text = deviceData.temperature.ToString();
+            } else
+            {
+                switch (trimmedUdpData)
+                {
+                    case "enter vaild setpoint":
+                        break;
+
+                    case "enter vaild setpoint":
+                        break;
+
+                    case "enter vaild setpoint":
+                        break;
+
+                }
+            }
+
+        }
+
+        if (isTimerActive)
+        {
+            doTimer();
+        }
+        if (isValidConnection && connectionFlag)
+        {
+            showSuccess("Connection established successfully.");
+            connectionFlag = false;
+        }
+    }
 
     private void initListenerThread()
     {
@@ -72,6 +146,7 @@ public class UDPClient : MonoBehaviour
                     if (returnData.ToString() == "server_handshake")
                     {
                         isValidConnection = true;
+                        connectionFlag = true;
                     }
                     else
                     {
@@ -84,31 +159,6 @@ public class UDPClient : MonoBehaviour
             {
                 Debug.Log(e.ToString());
             }
-        }
-    }
-
-    int i = 0;
-    void Update()
-    {
-        if (isNewData)
-        {
-            isNewData = false;
-            chart.AddXAxisData("x" + i);
-            chart.AddData(0, float.Parse(UDPData));
-            i++;
-            if (UDPData != null)
-            {
-                tempatureDisplay.text = UDPData;
-            }
-        }
-
-        if (isTimerActive)
-        {
-            doTimer();
-        }
-        if (isValidConnection)
-        {
-            showSuccess("Connection established successfully.");
         }
     }
 
@@ -188,6 +238,8 @@ public class UDPClient : MonoBehaviour
     {
         initListenerThread();
         sendClientHandshake();
+        // Disable screen dimming
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
     }
 
     void OnDisable()

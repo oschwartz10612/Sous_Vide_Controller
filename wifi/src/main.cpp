@@ -3,7 +3,7 @@
 #include <WiFiUdp.h>
 #include "keys.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210; // local port to listen on
@@ -17,7 +17,6 @@ boolean newData = false;
 void setup()
 {
   Serial.begin(9600);
-  Serial.println();
 
 #ifdef DEBUG
   Serial.printf("Connecting to %s ", SSID);

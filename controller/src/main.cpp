@@ -2,10 +2,13 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <PID_v1.h>
+#include <SoftwareSerial.h>
 
 #define RelayPin 7
 
 #define ONE_WIRE_BUS 4
+
+SoftwareSerial wifi(2, 3); // RX, TX
 
 enum operatingState
 {
@@ -13,6 +16,7 @@ enum operatingState
     RUN
 };
 operatingState opState = OFF;
+String state = "off";
 volatile unsigned long onTime = 0;
 
 unsigned int WindowSize = 10000;
@@ -47,7 +51,8 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(9600);
+    wifi.begin(9600);
 
     pinMode(RelayPin, OUTPUT);   // Output mode to drive relay
     digitalWrite(RelayPin, LOW); // make sure it is off to start
@@ -55,7 +60,8 @@ void setup()
     sensors.begin();
     if (!sensors.getAddress(tempSensor, 0))
     {
-        Serial.println("Sensor not found");
+        Serial.println("sensor not found");
+        wifi.print("sensor not found\n");
     }
     sensors.setResolution(tempSensor, resolution);
     sensors.setWaitForConversion(false);
@@ -80,29 +86,40 @@ void Off()
     digitalWrite(RelayPin, LOW); // make sure it is off
 
     Serial.println("enter vaild setpoint");
+        wifi.print("enter vaild setpoint\n");
+
 
     while (true)
     {
-        if (Serial.available() > 0)
+        if (wifi.available() > 0)
         {
-            double temp = Serial.parseInt();
+            double temp = wifi.parseInt();
             Serial.println(temp);
+            wifi.print(temp);
+            wifi.print("\n");
             if (temp >= 23 && temp <= 300)
             {
                 Serial.println("setpoint valid");
+                                wifi.print("setpoint valid\n");
+
                 Setpoint = temp;
                 break;
             }
             else
             {
                 Serial.println("enter vaild setpoint");
+                                wifi.print("enter vaild setpoint\n");
+
             }
         }
     }
 
     Serial.println("start cooking");
+        wifi.print("start cooking\n");
+
    windowStartTime = millis();
     opState = RUN; // start control
+    state = "run";
 }
 
 void Run()
@@ -110,15 +127,18 @@ void Run()
     while (true)
     {
 
-        if (Serial.available())
+        if (wifi.available())
         {
             String ch;
-            ch = Serial.readString();
+            ch = wifi.readString();
             ch.trim();
             if (ch == "off")
             {
                 opState = OFF;
+                state = "off";
                 Serial.println("stop cooking");
+                                wifi.print("stop cooking\n");
+
                 break;
             }
         }
@@ -140,11 +160,16 @@ void Run()
         if (millis() - lastLogTime > logInterval)
         {
             lastLogTime = millis();
-            Serial.print(Setpoint);
-            Serial.print(",");
-            Serial.print(Input);
-            Serial.print(",");
-            Serial.println(Output);
+
+            wifi.print("l:");
+            wifi.print(Setpoint);
+            wifi.print(",");
+            wifi.print(Input);
+            wifi.print(",");
+            wifi.print(Output);
+            wifi.print(",");
+            wifi.print(state);
+            wifi.print("\n");
         }
         delay(50);
     }
