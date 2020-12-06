@@ -80,12 +80,17 @@ public class UDPClient : MonoBehaviour
                     case "enter vaild setpoint":
                         break;
 
-                    case "enter vaild setpoint":
+                    case "start cooking":
                         break;
 
-                    case "enter vaild setpoint":
+                    case "stop cooking":
                         break;
 
+                    case "setpoint valid":
+                        break;
+
+                    default:
+                        break;
                 }
             }
 
