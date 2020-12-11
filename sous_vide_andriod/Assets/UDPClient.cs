@@ -23,6 +23,9 @@ public class UDPClient : MonoBehaviour
     public Text setpointDisplay;
     public Text outputDisplay;
     public Text stateDisplay;
+    public Image stateImage;
+    public Image logImage;
+    public Text logText;
 
     public LineChart chart;
     public InputField inputTemp;
@@ -32,8 +35,12 @@ public class UDPClient : MonoBehaviour
     private Boolean isValidConnection = false;
     private Boolean connectionFlag = false;
 
-    private Boolean isTimerActive = false;
-    private float timeRemaining = 10;
+    private Boolean isConnectionTimerActive = false;
+    private Boolean isLogTimerActive = false;
+
+    private float connectionTimeRemaining = 10;
+    private float logTimeRemaining = 4;
+
 
     private class DeviceData
     {
@@ -78,15 +85,19 @@ public class UDPClient : MonoBehaviour
                 switch (trimmedUdpData)
                 {
                     case "enter vaild setpoint":
+                        showError("Enter valid setpoint...");
                         break;
 
                     case "start cooking":
+                        stateImage.color = new Color32(207, 96, 0, 255);
                         break;
 
                     case "stop cooking":
+                        stateImage.color = new Color32(51, 51, 51, 255);
                         break;
 
                     case "setpoint valid":
+                        showSuccess("Setpoint is valid!");
                         break;
 
                     default:
@@ -96,9 +107,13 @@ public class UDPClient : MonoBehaviour
 
         }
 
-        if (isTimerActive)
+        if (isConnectionTimerActive)
         {
-            doTimer();
+            doConnectionTimer();
+        }
+        if (isLogTimerActive)
+        {
+            doLogTimer();
         }
         if (isValidConnection && connectionFlag)
         {
@@ -145,8 +160,8 @@ public class UDPClient : MonoBehaviour
                 {
                     string returnData = Encoding.ASCII.GetString(receiveBytes);
                     Debug.Log("Message Received " + returnData.ToString());
-                    Debug.Log("Address IP Sender " + RemoteIpEndPoint.Address.ToString());
-                    Debug.Log("Port Number Sender " + RemoteIpEndPoint.Port.ToString());
+                    //Debug.Log("Address IP Sender " + RemoteIpEndPoint.Address.ToString());
+                    //Debug.Log("Port Number Sender " + RemoteIpEndPoint.Port.ToString());
 
                     if (returnData.ToString() == "server_handshake")
                     {
@@ -180,16 +195,16 @@ public class UDPClient : MonoBehaviour
     void sendClientHandshake()
     {
         sendData("client_handshake");
-        timeRemaining = 10;
+        connectionTimeRemaining = 10;
         isValidConnection = false;
-        isTimerActive = true;
+        isConnectionTimerActive = true;
     }
 
-    void doTimer()
+    void doConnectionTimer()
     {
-        if (timeRemaining > 0)
+        if (connectionTimeRemaining > 0)
         {
-            timeRemaining -= Time.deltaTime;
+            connectionTimeRemaining -= Time.deltaTime;
         }
         else
         {
@@ -197,7 +212,21 @@ public class UDPClient : MonoBehaviour
             {
                 showError("Failed to establish connection with device. Is the device powered on?");
             }
-            isTimerActive = false;
+            isConnectionTimerActive = false;
+        }
+    }
+
+    void doLogTimer()
+    {
+        if (logTimeRemaining > 0)
+        {
+            logTimeRemaining -= Time.deltaTime;
+        }
+        else
+        {
+            isLogTimerActive = false;
+            logImage.gameObject.SetActive(false);
+            logText.gameObject.SetActive(false);
         }
     }
 
@@ -232,11 +261,23 @@ public class UDPClient : MonoBehaviour
     private void showError(string error)
     {
         Debug.LogError(error);
+        logText.text = error;
+        logImage.color = new Color(255, 0, 0, 255);
+        logText.gameObject.SetActive(true);
+        logImage.gameObject.SetActive(true);
+        logTimeRemaining = 5;
+        isLogTimerActive = true;
     }
 
     private void showSuccess(string error)
     {
         Debug.Log(error);
+        logText.text = error;
+        logImage.color = new Color(0, 255, 0, 255);
+        logText.gameObject.SetActive(true);
+        logImage.gameObject.SetActive(true);
+        logTimeRemaining = 5;
+        isLogTimerActive = true;
     }
 
     void Start()

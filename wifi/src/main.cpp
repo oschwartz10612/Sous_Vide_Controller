@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ESP8266mDNS.h>
 #include "keys.h"
 
 //#define DEBUG 1
@@ -29,6 +30,14 @@ void setup()
     Serial.print(".");
 #endif
   }
+
+  if (!MDNS.begin("sous_vide"))
+  {
+#ifdef DEBUG
+    Serial.println("Error setting up MDNS responder!");
+#endif
+  }
+
 #ifdef DEBUG
   Serial.println(" connected");
 #endif
