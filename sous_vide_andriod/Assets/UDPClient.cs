@@ -41,6 +41,11 @@ public class UDPClient : MonoBehaviour
     private float connectionTimeRemaining = 10;
     private float logTimeRemaining = 4;
 
+    List<float> tempData;
+    private string address;
+
+    private int chartPos = 0;
+
 
     private class DeviceData
     {
@@ -50,7 +55,6 @@ public class UDPClient : MonoBehaviour
         public float output;
     }
 
-    int i = 0;
     void Update()
     {
         if (isNewData)
@@ -72,14 +76,18 @@ public class UDPClient : MonoBehaviour
                     output = float.Parse(data[2]),
                     state = data[3]
                 };
-                chart.AddXAxisData("x" + i);
+                chart.AddXAxisData("x" + chartPos);
                 chart.AddData(0, deviceData.temperature);
-                i++;
+                chartPos++;
 
                 setpointDisplay.text = deviceData.setpoint.ToString();
                 outputDisplay.text = deviceData.output.ToString();
                 stateDisplay.text = deviceData.state;
                 temperatureDisplay.text = deviceData.temperature.ToString();
+
+                tempData.Add(deviceData.temperature);
+                SaveSystem.SaveData(address, tempData);
+
             } else
             {
                 switch (trimmedUdpData)
@@ -122,13 +130,12 @@ public class UDPClient : MonoBehaviour
         }
     }
 
-    private void initListenerThread()
+    private void initListenerThread(string ip)
     {
-        string address = defaultClientAddress;
-        ConnectionData data = SaveSystem.LoadData();
-        if (data != null)
+        address = defaultClientAddress;
+        if (ip != null)
         {
-            address = data.ip;
+            address = ip;
         }
         inputClientIP.text = address;
 
@@ -235,9 +242,9 @@ public class UDPClient : MonoBehaviour
         destroyUDP();
 
         string address = inputClientIP.text;
-        SaveSystem.SaveData(address);
+        SaveSystem.SaveData(address, tempData);
 
-        initListenerThread();
+        initListenerThread(address);
         sendClientHandshake();
     }
 
@@ -256,6 +263,14 @@ public class UDPClient : MonoBehaviour
     {
         Byte[] sendBytes = Encoding.ASCII.GetBytes(data);
         receivingUdpClient.Send(sendBytes, sendBytes.Length);
+    }
+
+    public void clearData()
+    {
+        chart.ClearData();
+        tempData.Clear();
+        chartPos = 0;
+        SaveSystem.SaveData(address, tempData);
     }
 
     private void showError(string error)
@@ -282,10 +297,27 @@ public class UDPClient : MonoBehaviour
 
     void Start()
     {
-        initListenerThread();
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+        ConnectionData data = SaveSystem.LoadData();
+        tempData = data.prevData;
+
+        initListenerThread(data.ip);
         sendClientHandshake();
         // Disable screen dimming
-        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+        if (tempData != null)
+        {
+            foreach (float value in tempData)
+            {
+                chart.AddXAxisData("x" + chartPos);
+                chartPos++;
+                chart.AddData(0, value);
+            }
+        } else
+        {
+            tempData = new List<float>();
+        }
     }
 
     void OnDisable()
