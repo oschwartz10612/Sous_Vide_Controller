@@ -85,6 +85,11 @@ public class UDPClient : MonoBehaviour
                 stateDisplay.text = deviceData.state;
                 temperatureDisplay.text = deviceData.temperature.ToString();
 
+                if (deviceData.state == "run")
+                {
+                    stateImage.color = new Color32(207, 96, 0, 255);
+                }
+
                 tempData.Add(deviceData.temperature);
                 SaveSystem.SaveData(address, tempData);
 
@@ -130,15 +135,8 @@ public class UDPClient : MonoBehaviour
         }
     }
 
-    private void initListenerThread(string ip)
+    private void initListenerThread()
     {
-        address = defaultClientAddress;
-        if (ip != null)
-        {
-            address = ip;
-        }
-        inputClientIP.text = address;
-
         Debug.Log("Started on : " + receivingPortNumber.ToString());
         udpListeningThread = new Thread(new ThreadStart(UdpListener));
         receivingUdpClient = new UdpClient(receivingPortNumber);
@@ -241,10 +239,11 @@ public class UDPClient : MonoBehaviour
     {
         destroyUDP();
 
-        string address = inputClientIP.text;
-        SaveSystem.SaveData(address, tempData);
+        string ip = inputClientIP.text;
+        SaveSystem.SaveData(ip, tempData);
+        address = ip;
 
-        initListenerThread(address);
+        initListenerThread();
         sendClientHandshake();
     }
 
@@ -300,24 +299,25 @@ public class UDPClient : MonoBehaviour
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         ConnectionData data = SaveSystem.LoadData();
-        tempData = data.prevData;
 
-        initListenerThread(data.ip);
-        sendClientHandshake();
-        // Disable screen dimming
-
-        if (tempData != null)
+        if (data == null) {
+            SaveSystem.SaveData(defaultClientAddress, new List<float>());
+            address = defaultClientAddress;
+            tempData = new List<float>();
+        } else
         {
+            address = data.ip;
+            inputClientIP.text = data.ip;
+            tempData = data.prevData;
             foreach (float value in tempData)
             {
                 chart.AddXAxisData("x" + chartPos);
                 chartPos++;
                 chart.AddData(0, value);
             }
-        } else
-        {
-            tempData = new List<float>();
         }
+        initListenerThread();
+        sendClientHandshake();
     }
 
     void OnDisable()

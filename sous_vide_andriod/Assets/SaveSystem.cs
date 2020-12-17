@@ -22,7 +22,7 @@ public static class SaveSystem
     public static void SaveData(string ip, List<float> tempData)
     {
         BinaryFormatter formatter = new BinaryFormatter();
-        string path = Application.persistentDataPath + "applicationData.bin";
+        string path = Application.persistentDataPath + "/applicationData.bin";
         FileStream stream = new FileStream(path, FileMode.Create);
 
         ConnectionData data = new ConnectionData(ip, tempData);
@@ -33,7 +33,7 @@ public static class SaveSystem
 
     public static ConnectionData LoadData()
     {
-        string path = Application.persistentDataPath + "applicationData.bin";
+        string path = Application.persistentDataPath + "/applicationData.bin";
         if (File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();
