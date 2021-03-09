@@ -91,16 +91,16 @@ void Off()
 
     while (true)
     {
-        if (wifi.available() > 0)
+        if (Serial.available() > 0)
         {
-            double temp = wifi.parseInt();
+            double temp = Serial.parseInt();
             Serial.println(temp);
-            wifi.print(temp);
-            wifi.print("\n");
+            Serial.print(temp);
+            Serial.print("\n");
             if (temp >= 23 && temp <= 300)
             {
                 Serial.println("setpoint valid");
-                                wifi.print("setpoint valid\n");
+                                Serial.print("setpoint valid\n");
 
                 Setpoint = temp;
                 break;
@@ -108,14 +108,14 @@ void Off()
             else
             {
                 Serial.println("enter vaild setpoint");
-                                wifi.print("enter vaild setpoint\n");
+                                Serial.print("enter vaild setpoint\n");
 
             }
         }
     }
 
     Serial.println("start cooking");
-        wifi.print("start cooking\n");
+        Serial.print("start cooking\n");
 
    windowStartTime = millis();
     opState = RUN; // start control
@@ -127,17 +127,17 @@ void Run()
     while (true)
     {
 
-        if (wifi.available())
+        if (Serial.available())
         {
             String ch;
-            ch = wifi.readString();
+            ch = Serial.readString();
             ch.trim();
             if (ch == "off")
             {
                 opState = OFF;
                 state = "off";
                 Serial.println("stop cooking");
-                                wifi.print("stop cooking\n");
+                                Serial.print("stop cooking\n");
 
                 break;
             }
@@ -161,15 +161,15 @@ void Run()
         {
             lastLogTime = millis();
 
-            wifi.print("l:");
-            wifi.print(Setpoint);
-            wifi.print(",");
-            wifi.print(Input);
-            wifi.print(",");
-            wifi.print(Output);
-            wifi.print(",");
-            wifi.print(state);
-            wifi.print("\n");
+            Serial.print("l:");
+            Serial.print(Setpoint);
+            Serial.print(",");
+            Serial.print(Input);
+            Serial.print(",");
+            Serial.print(Output);
+            Serial.print(",");
+            Serial.print(state);
+            Serial.print("\n");
         }
         delay(50);
     }

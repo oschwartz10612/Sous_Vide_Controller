@@ -1,12 +1,15 @@
 #!/usr/local/bin/python3
  
-import serial, io
+import serial, io, time
  
-device   = '/dev/tty.usbserial-AE01AX15' # serial port
+device   = '/dev/cu.usbserial-1420' # serial port
 baud     = 9600                          # baud rate
-filename = 'bald-log.txt'                # log file to save data in
- 
+filename = 'temp-log.txt'                # log file to save data in
+
 with serial.Serial(device,baud) as serialPort, open(filename,'wb') as outFile:
+    line = serialPort.readline() # must send \n! get a line of log
+    time.sleep(3)
+    serialPort.write(b'55')
     while(1):
         line = serialPort.readline() # must send \n! get a line of log
         print (line)                 # show line on screen
